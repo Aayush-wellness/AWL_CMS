@@ -23,16 +23,17 @@ export type ContactQuery = {
 // ── Public: Save to DB and send notification email ───────────────────────
 
 export async function submitContactInquiry(input: ContactSubmitInput) {
-	// const inquiry = await prisma.contactInquiry.create({
-	// 	data: {
-	// 		fullName: input.fullName,
-	// 		email: input.email,
-	// 		phoneNo: input.phoneNo ?? null,
-	// 		company: input.company ?? null,
-	// 		inquiryType: input.inquiryType ?? null,
-	// 		message: input.message,
-	// 	},
-	// });
+	console.log("enquiery has been reaached here")
+	const inquiry = await prisma.contactInquiry.create({
+		data: {
+			fullName: input.fullName,
+			email: input.email,
+			phoneNo: input.phoneNo ?? null,
+			company: input.company ?? null,
+			inquiryType: input.inquiryType ?? null,
+			message: input.message,
+		},
+	});
 
 	// Fire-and-forget email notification (do not block response)
 	sendContactEmail({
@@ -45,7 +46,9 @@ export async function submitContactInquiry(input: ContactSubmitInput) {
 		console.error("[ContactService] Email notification failed:", err);
 	});
 
-	return "Email Sent Succesfully";
+	console.log("enquiery has been saved in database", inquiry)
+
+	return inquiry;
 }
 
 // ── Admin: Paginated list ────────────────────────────────────────────────
