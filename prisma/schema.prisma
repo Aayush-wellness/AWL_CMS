@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+}
+
+enum ProductCategory {
+  WELLNESS_GUMMIES
+  HEALTH_SUPPLEMENTS
+  HERBAL_MASALA
+  SHILAJIT_DROPS
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+}
+
+enum JobStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+enum ApplicationStatus {
+  PENDING
+  UNDER_REVIEW
+  SHORTLISTED
+  REJECTED
+  HIRED
+}
+
+// ─────────────────────────────────────────────
+// Models
+// ─────────────────────────────────────────────
+
+model User {
+  id            String         @id @default(cuid(2))
+  name          String
+  email         String         @unique
+  passwordHash  String
+  role          UserRole       @default(ADMIN)
+  isActive      Boolean        @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  pressReleases PressRelease[] @relation("CreatedBy")
+  products      Product[]      @relation("ProductCreatedBy")
+  jobPosts      JobPost[]      @relation("JobCreatedBy")
+
+  @@index([email])
+}
+
+model PressRelease {
+  id          String    @id @default(cuid(2))
+  title       String    @db.VarChar(300)
+  subtitle    String?   @db.VarChar(500)
+  slug        String    @unique
+  content     Json
+  imageUrl    String?
+  pdfUrl      String?
+  releaseDate DateTime
+  isPublished Boolean   @default(false)
+  publishedAt DateTime?
+  deletedAt   DateTime?
+  createdById String
+  createdBy   User      @relation("CreatedBy", fields: [createdById], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([createdById])
+  @@index([releaseDate])
+  @@index([isPublished])
+  @@index([deletedAt])
+}
+
+model Product {
+  id              String          @id @default(cuid(2))
+  title           String          @db.VarChar(200)
+  subLabel        String?         @db.VarChar(100)
+  description     String?         @db.Text
+  category        ProductCategory
+  image           String?
+  thumbnails      String[]
+  keyBenefits     String[]
+  consumerNeed    String?         @db.Text
+  ingredientsList Json?
+  isActive        Boolean         @default(true)
+  sortOrder       Int             @default(0)
+  deletedAt       DateTime?
+  createdById     String
+  createdBy       User            @relation("ProductCreatedBy", fields: [createdById], references: [id])
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([category])
+  @@index([isActive])
+  @@index([deletedAt])
+  @@index([sortOrder])
+}
+
+model JobPost {
+  id           String           @id @default(cuid(2))
+  title        String           @db.VarChar(200)
+  department   String           @db.VarChar(100)
+  location     String           @db.VarChar(150)
+  type         JobType          @default(FULL_TIME)
+  experience   String           @db.VarChar(50)
+  description  String?          @db.Text
+  status       JobStatus        @default(DRAFT)
+  publishedAt  DateTime?
+  closedAt     DateTime?
+  deletedAt    DateTime?
+  createdById  String
+  createdBy    User             @relation("JobCreatedBy", fields: [createdById], references: [id])
+  applications JobApplication[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([status])
+  @@index([department])
+  @@index([deletedAt])
+}
+
+model JobApplication {
+  id         String            @id @default(cuid(2))
+  jobPostId  String?
+  jobPost    JobPost?          @relation(fields: [jobPostId], references: [id])
+  fullName   String
+  email      String
+  phone      String
+  location   String
+  experience String
+  resumeUrl  String
+  coverNote  String?           @db.Text
+  status     ApplicationStatus @default(PENDING)
+  notes      String?           @db.Text
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  @@index([jobPostId])
+  @@index([status])
+  @@index([email])
+}
+
+model ContactInquiry {
+  id          String    @id @default(cuid(2))
+  fullName    String
+  email       String
+  phoneNo     String?
+  company     String?
+  inquiryType String?
+  message     String
+  isRead      Boolean   @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([isRead])
+  @@index([deletedAt])
+}
