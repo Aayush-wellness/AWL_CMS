@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { successResponse } from "../../utils/apiResponse.js";
 import STATUS_CODES from "../../utils/statusCodes.js";
+import { uploadToCloudinary } from "../../utils/cloudinary.js";
 import {
 	createPressRelease,
 	deletePressRelease,
@@ -73,6 +74,18 @@ export async function publicGetBySlug(req: Request, res: Response, next: NextFun
 	try {
 		const pressRelease = await getPublicPressReleaseBySlug(req.params.slug as string);
 		successResponse(res, pressRelease, "Press release fetched successfully", STATUS_CODES.OK);
+	} catch (error) {
+		next(error);
+	}
+}
+
+export async function uploadFile(req: Request, res: Response, next: NextFunction): Promise<void> {
+	try {
+		if (!req.file) {
+			throw new Error("No file uploaded");
+		}
+		const url = await uploadToCloudinary(req.file);
+		successResponse(res, { url }, "File uploaded successfully to Cloudinary", STATUS_CODES.OK);
 	} catch (error) {
 		next(error);
 	}

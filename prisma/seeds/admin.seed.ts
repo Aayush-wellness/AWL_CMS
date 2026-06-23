@@ -5,7 +5,7 @@ import { hashPassword } from "../../src/utils/bcrypt.js";
 export async function seedAdmin(): Promise<void> {
   console.log("   → admin");
 
-  const email = "admin@company.com";
+  const email = "admin@awl.com";
   const existingUser = await prisma.user.findUnique({ where: { email } });
 
   if (existingUser) {

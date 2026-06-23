@@ -9,6 +9,19 @@ import {
 	updateApplicationStatus,
 } from "./application.service.js";
 import { ApplicationStatus } from "@prisma/client";
+import { uploadToCloudinary } from "../../utils/cloudinary.js";
+
+export async function uploadResume(req: Request, res: Response, next: NextFunction): Promise<void> {
+	try {
+		if (!req.file) {
+			throw new Error("No file uploaded");
+		}
+		const url = await uploadToCloudinary(req.file);
+		successResponse(res, { url }, "Resume uploaded successfully to Cloudinary", STATUS_CODES.OK);
+	} catch (error) {
+		next(error);
+	}
+}
 
 export async function submit(req: Request, res: Response, next: NextFunction): Promise<void> {
 	try {

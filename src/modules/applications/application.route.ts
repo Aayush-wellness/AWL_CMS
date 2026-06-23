@@ -1,12 +1,15 @@
 import { Router } from "express";
+import multer from "multer";
 import { authenticate, authorize } from "../../middlewares/auth.js";
 import { validateRequest } from "../../middlewares/validate.js";
 import { submitApplicationValidator, updateApplicationStatusValidator } from "./application.validators.js";
-import { getById, list, remove, submit, updateStatus } from "./application.controller.js";
+import { getById, list, remove, submit, updateStatus, uploadResume } from "./application.controller.js";
 
 const router = Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
-// Public — anyone can submit an application (careers form)
+// Public — upload resume and submit application
+router.post("/upload", upload.single("file"), uploadResume);
 router.post("/", validateRequest(submitApplicationValidator), submit);
 
 // Admin — protected routes

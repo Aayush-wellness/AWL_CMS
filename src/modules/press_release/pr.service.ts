@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import prisma from "@root/prisma.js";
 import { AppError } from "../../utils/errors.js";
-import { buildPaginationMeta, parsePagination  } from "../../utils/paginationUtils.js";
+import { buildPaginationMeta, parsePagination } from "../../utils/paginationUtils.js";
 
 export type PressReleaseInput = {
 	title?: string;
@@ -160,10 +160,14 @@ export async function getPublicPressReleases() {
 		},
 		orderBy: { releaseDate: "desc" },
 		select: {
+			id: true,
 			title: true,
 			slug: true,
 			imageUrl: true,
 			releaseDate: true,
+			subtitle: true,
+			pdfUrl: true,
+			content: true
 		},
 	});
 }
