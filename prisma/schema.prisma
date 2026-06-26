@@ -57,11 +57,47 @@ model User {
   lastLoginAt   DateTime?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
-  pressReleases PressRelease[] @relation("CreatedBy")
-  products      Product[]      @relation("ProductCreatedBy")
-  jobPosts      JobPost[]      @relation("JobCreatedBy")
+  pressReleases      PressRelease[]     @relation("CreatedBy")
+  products           Product[]          @relation("ProductCreatedBy")
+  jobPosts           JobPost[]          @relation("JobCreatedBy")
+  investorCategories InvestorCategory[] @relation("InvestorCategoryCreatedBy")
+  investorDocuments  InvestorDocument[] @relation("InvestorDocCreatedBy")
 
   @@index([email])
+}
+
+model InvestorCategory {
+  id          String             @id @default(cuid(2))
+  slug        String             @unique
+  name        String             @db.VarChar(100)
+  documents   InvestorDocument[]
+  isActive    Boolean            @default(true)
+  sortOrder   Int                @default(0)
+  createdById String
+  createdBy   User               @relation("InvestorCategoryCreatedBy", fields: [createdById], references: [id])
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@index([createdById])
+  @@index([isActive])
+  @@index([sortOrder])
+}
+
+model InvestorDocument {
+  id          String           @id @default(cuid(2))
+  name        String           @db.VarChar(300)
+  url         String           @db.Text
+  categoryId  String
+  category    InvestorCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdById String
+  createdBy   User             @relation("InvestorDocCreatedBy", fields: [createdById], references: [id])
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  deletedAt   DateTime?
+
+  @@index([categoryId])
+  @@index([createdById])
+  @@index([deletedAt])
 }
 
 model PressRelease {

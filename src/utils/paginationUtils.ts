@@ -4,7 +4,7 @@ type PaginationQuery = {
   limit?: string | number;
 };
 
-const MAX_PAGE_SIZE = 100;
+const MAX_PAGE_SIZE = 1000;
 const DEFAULT_PAGE = 1;
 
 function parsePositiveInt(value: string | number | undefined, fallback: number): number {
