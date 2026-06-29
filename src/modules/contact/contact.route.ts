@@ -13,6 +13,6 @@ router.post("/", validateRequest(submitContactValidator), submit);
 router.get("/", authenticate(), authorize("SUPER_ADMIN", "ADMIN"), list);
 router.get("/:id", authenticate(), authorize("SUPER_ADMIN", "ADMIN"), getById);
 router.patch("/:id/read", authenticate(), authorize("SUPER_ADMIN", "ADMIN"), markAsRead);
-router.delete("/:id", authenticate(), authorize("SUPER_ADMIN"), remove);
+router.delete("/:id", authenticate(), authorize("ADMIN", "SUPER_ADMIN"), remove);
 
 export default router;

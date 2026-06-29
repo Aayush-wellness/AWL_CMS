@@ -1,6 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
 import { successResponse } from "../../utils/apiResponse.js";
 import STATUS_CODES from "../../utils/statusCodes.js";
+import { logActivity } from "../activity/activity.service.js";
+import { uploadToCloudinary } from "../../utils/cloudinary.js";
 import {
   createCategory,
   createDocument,
@@ -73,6 +75,12 @@ export async function createDocumentAction(req: Request, res: Response, next: Ne
       throw new Error("Unauthorized");
     }
     const doc = await createDocument(req.body, req.user.id);
+    await logActivity(
+      "investor",
+      "created",
+      `Investor document '${doc.name}' added`,
+      `INV-${doc.id.slice(-4).toUpperCase()}`
+    );
     successResponse(res, doc, "Investor document created successfully", STATUS_CODES.CREATED);
   } catch (error) {
     next(error);
@@ -100,6 +108,12 @@ export async function getDocumentByIdAction(req: Request, res: Response, next: N
 export async function updateDocumentAction(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const doc = await updateDocument(req.params.id as string, req.body);
+    await logActivity(
+      "investor",
+      "updated",
+      `Investor document '${doc.name}' details updated`,
+      `INV-${doc.id.slice(-4).toUpperCase()}`
+    );
     successResponse(res, doc, "Investor document updated successfully", STATUS_CODES.OK);
   } catch (error) {
     next(error);
@@ -109,6 +123,12 @@ export async function updateDocumentAction(req: Request, res: Response, next: Ne
 export async function removeDocumentAction(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const doc = await deleteDocument(req.params.id as string);
+    await logActivity(
+      "investor",
+      "deleted",
+      `Investor document '${doc.name}' deleted`,
+      `INV-${doc.id.slice(-4).toUpperCase()}`
+    );
     successResponse(res, doc, "Investor document deleted successfully", STATUS_CODES.OK);
   } catch (error) {
     next(error);
@@ -121,6 +141,18 @@ export async function publicList(_req: Request, res: Response, next: NextFunctio
   try {
     const categories = await getPublicInvestorCategoriesWithDocs();
     successResponse(res, categories, "Active investor categories and documents fetched successfully", STATUS_CODES.OK);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function uploadFileAction(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    if (!req.file) {
+      throw new Error("No file uploaded");
+    }
+    const url = await uploadToCloudinary(req.file);
+    successResponse(res, { url }, "File uploaded successfully to Cloudinary", STATUS_CODES.OK);
   } catch (error) {
     next(error);
   }

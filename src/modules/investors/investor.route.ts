@@ -1,4 +1,5 @@
 import { Router } from "express";
+import multer from "multer";
 import { authenticate, authorize } from "../../middlewares/auth.js";
 import { validateRequest } from "../../middlewares/validate.js";
 import {
@@ -18,7 +19,10 @@ import {
   removeDocumentAction,
   updateCategoryAction,
   updateDocumentAction,
+  uploadFileAction,
 } from "./investor.controller.js";
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 const router = Router();
 
@@ -88,6 +92,14 @@ router.delete(
   authenticate(),
   authorize("SUPER_ADMIN", "ADMIN"),
   removeDocumentAction
+);
+
+router.post(
+  "/upload",
+  authenticate(),
+  authorize("SUPER_ADMIN", "ADMIN"),
+  upload.single("file"),
+  uploadFileAction
 );
 
 export default router;

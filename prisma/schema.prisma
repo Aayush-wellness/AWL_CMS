@@ -15,13 +15,6 @@ enum UserRole {
   ADMIN
 }
 
-enum ProductCategory {
-  WELLNESS_GUMMIES
-  HEALTH_SUPPLEMENTS
-  HERBAL_MASALA
-  SHILAJIT_DROPS
-}
-
 enum JobType {
   FULL_TIME
   PART_TIME
@@ -59,6 +52,7 @@ model User {
   updatedAt     DateTime       @updatedAt
   pressReleases      PressRelease[]     @relation("CreatedBy")
   products           Product[]          @relation("ProductCreatedBy")
+  productCategories  ProductCategory[]  @relation("ProductCategoryCreatedBy")
   jobPosts           JobPost[]          @relation("JobCreatedBy")
   investorCategories InvestorCategory[] @relation("InvestorCategoryCreatedBy")
   investorDocuments  InvestorDocument[] @relation("InvestorDocCreatedBy")
@@ -77,6 +71,25 @@ model InvestorCategory {
   createdBy   User               @relation("InvestorCategoryCreatedBy", fields: [createdById], references: [id])
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
+
+  @@index([createdById])
+  @@index([isActive])
+  @@index([sortOrder])
+}
+
+model ProductCategory {
+  id              String    @id @default(cuid(2))
+  slug            String    @unique
+  name            String    @db.VarChar(100)
+  sectionTitle    String    @db.VarChar(300)
+  sectionSubtitle String?   @db.Text
+  products        Product[]
+  isActive        Boolean   @default(true)
+  sortOrder       Int       @default(0)
+  createdById     String
+  createdBy       User      @relation("ProductCategoryCreatedBy", fields: [createdById], references: [id])
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   @@index([createdById])
   @@index([isActive])
@@ -128,7 +141,8 @@ model Product {
   title           String          @db.VarChar(200)
   subLabel        String?         @db.VarChar(100)
   description     String?         @db.Text
-  category        ProductCategory
+  categoryId      String
+  category        ProductCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   image           String?
   thumbnails      String[]
   keyBenefits     String[]
@@ -142,7 +156,7 @@ model Product {
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
-  @@index([category])
+  @@index([categoryId])
   @@index([isActive])
   @@index([deletedAt])
   @@index([sortOrder])
@@ -207,3 +221,16 @@ model ContactInquiry {
   @@index([isRead])
   @@index([deletedAt])
 }
+
+model Activity {
+  id        String   @id @default(cuid(2))
+  type      String   @db.VarChar(50)  // "press" | "product" | "job" | "contact" | "investor"
+  action    String   @db.VarChar(50)  // "created" | "updated" | "deleted" | "received" | "published"
+  text      String   @db.VarChar(500)
+  meta      String?  @db.VarChar(50)
+  createdAt DateTime @default(now())
+
+  @@index([type])
+  @@index([createdAt])
+}
+

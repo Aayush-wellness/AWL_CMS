@@ -11,6 +11,7 @@ import jobRouter from "./modules/jobs/job.route.js";
 import applicationRouter from "./modules/applications/application.route.js";
 import contactRouter from "./modules/contact/contact.route.js";
 import investorRouter from "./modules/investors/investor.route.js";
+import activityRouter from "./modules/activity/activity.route.js";
 
 const router = Router();
 
@@ -28,6 +29,7 @@ router.use("/jobs", jobRouter);
 router.use("/applications", applicationRouter);
 router.use("/contact", contactRouter);
 router.use("/investors", investorRouter);
+router.use("/activity", activityRouter);
 
 // Public (no auth)
 router.use("/public", publicRouter);

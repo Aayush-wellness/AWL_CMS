@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { successResponse } from "../../utils/apiResponse.js";
 import STATUS_CODES from "../../utils/statusCodes.js";
+import { logActivity } from "../activity/activity.service.js";
 import {
 	deleteContactInquiry,
 	getContactInquiries,
@@ -14,6 +15,12 @@ import {
 export async function submit(req: Request, res: Response, next: NextFunction): Promise<void> {
 	try {
 		const inquiry = await submitContactInquiry(req.body);
+		await logActivity(
+			"contact",
+			"received",
+			`New contact response received from ${inquiry.fullName} (${inquiry.inquiryType || "General Inquiry"})`,
+			`CON-${inquiry.id.slice(-4).toUpperCase()}`
+		);
 		successResponse(res, inquiry, "Thank you! Your inquiry has been received.", STATUS_CODES.CREATED);
 	} catch (error) {
 		next(error);
@@ -52,6 +59,12 @@ export async function markAsRead(req: Request, res: Response, next: NextFunction
 export async function remove(req: Request, res: Response, next: NextFunction): Promise<void> {
 	try {
 		const inquiry = await deleteContactInquiry(req.params.id as string);
+		await logActivity(
+			"contact",
+			"deleted",
+			`Contact inquiry from ${inquiry.fullName} deleted`,
+			`CON-${inquiry.id.slice(-4).toUpperCase()}`
+		);
 		successResponse(res, inquiry, "Contact inquiry deleted successfully", STATUS_CODES.OK);
 	} catch (error) {
 		next(error);

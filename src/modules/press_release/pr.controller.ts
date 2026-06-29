@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import { successResponse } from "../../utils/apiResponse.js";
 import STATUS_CODES from "../../utils/statusCodes.js";
 import { uploadToCloudinary } from "../../utils/cloudinary.js";
+import { logActivity } from "../activity/activity.service.js";
 import {
 	createPressRelease,
 	deletePressRelease,
@@ -19,6 +20,12 @@ export async function create(req: Request, res: Response, next: NextFunction): P
 		}
 
 		const pressRelease = await createPressRelease(req.body, req.user.id);
+		await logActivity(
+			"press",
+			pressRelease.isPublished ? "published" : "created",
+			`Press release '${pressRelease.title}' ${pressRelease.isPublished ? "published" : "created"}`,
+			`PR-${pressRelease.id.slice(-4).toUpperCase()}`
+		);
 		successResponse(res, pressRelease, "Press release created successfully", STATUS_CODES.CREATED);
 	} catch (error) {
 		next(error);
@@ -46,6 +53,12 @@ export async function getById(req: Request, res: Response, next: NextFunction): 
 export async function update(req: Request, res: Response, next: NextFunction): Promise<void> {
 	try {
 		const pressRelease = await updatePressRelease(req.params.id as string, req.body);
+		await logActivity(
+			"press",
+			pressRelease.isPublished ? "published" : "updated",
+			`Press release '${pressRelease.title}' ${pressRelease.isPublished ? "published" : "updated"}`,
+			`PR-${pressRelease.id.slice(-4).toUpperCase()}`
+		);
 		successResponse(res, pressRelease, "Press release updated successfully", STATUS_CODES.OK);
 	} catch (error) {
 		next(error);
@@ -55,6 +68,12 @@ export async function update(req: Request, res: Response, next: NextFunction): P
 export async function remove(req: Request, res: Response, next: NextFunction): Promise<void> {
 	try {
 		const pressRelease = await deletePressRelease(req.params.id as string);
+		await logActivity(
+			"press",
+			"deleted",
+			`Press release '${pressRelease.title}' deleted`,
+			`PR-${pressRelease.id.slice(-4).toUpperCase()}`
+		);
 		successResponse(res, pressRelease, "Press release deleted successfully", STATUS_CODES.OK);
 	} catch (error) {
 		next(error);
